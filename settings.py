@@ -51,32 +51,3 @@ DEFAULT_REQUEST_HEADERS = {
 }
 
 
-# File: kerala_police_crawler/items.py
-
-import scrapy
-
-class UrlItem(scrapy.Item):
-    url = scrapy.Field()
-    status_code = scrapy.Field()
-    content_type = scrapy.Field()
-    title = scrapy.Field()
-    depth = scrapy.Field()
-
-
-# File: kerala_police_crawler/__init__.py
-
-# This file makes Python treat the directory as a package
-
-
-# File: kerala_police_crawler/spiders/__init__.py
-
-# This file makes Python treat the directory as a package
-
-
-# File: scrapy.cfg
-
-[settings]
-default = kerala_police_crawler.settings
-
-[deploy]
-project = kerala_police_crawler
