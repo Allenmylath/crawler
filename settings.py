@@ -2,10 +2,10 @@
 
 # Scrapy settings for kerala_police_crawler project
 
-BOT_NAME = 'kerala_police_crawler'
+BOT_NAME = 'crawler'
 
-SPIDER_MODULES = ['kerala_police_crawler.spiders']
-NEWSPIDER_MODULE = 'kerala_police_crawler.spiders'
+SPIDER_MODULES = ['crawler.spiders']
+NEWSPIDER_MODULE = 'crawler.spiders'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -26,7 +26,7 @@ CONCURRENT_REQUESTS = 16
 CONCURRENT_REQUESTS_PER_DOMAIN = 2
 
 # Configure user agent
-USER_AGENT = 'kerala_police_crawler (+http://www.yourdomain.com)'
+USER_AGENT = 'crawler (+http://www.yourdomain.com)'
 
 # Configure pipelines
 ITEM_PIPELINES = {
