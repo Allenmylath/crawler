@@ -1,0 +1,12 @@
+Server: nginx
+Content-Type: text/html; charset=UTF-8
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+Content-Security-Policy: default-src 'self' https://www.google.com https://www.facebook.com;style-src-elem https://cdn.jsdelivr.net/ https://cdnjs.cloudflare.com/ https://unpkg.com/ https://www.google.com/ https://www.gstatic.com/ https://www.googletagmanager.com/ https://fonts.gstatic.com/ https://fonts.googleapis.com/ https://code.jquery.com/ 'self' 'unsafe-inline'; script-src-elem https://cdn.jsdelivr.net/ https://cdnjs.cloudflare.com/ https://unpkg.com/ https://www.google.com/ https://www.gstatic.com/ https://www.googletagmanager.com/ https://fonts.gstatic.com/ https://fonts.googleapis.com/ https://code.jquery.com/ 'self' 'unsafe-inline'; font-src https://cdn.jsdelivr.net/ https://cdnjs.cloudflare.com/ https://unpkg.com/ https://www.google.com/ https://www.gstatic.com/ https://www.googletagmanager.com/ https://fonts.gstatic.com/ https://fonts.googleapis.com/ https://code.jquery.com/ 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Cache-Control: no-cache, private
+Date: Fri, 12 Sep 2025 12:59:46 GMT
+Set-Cookie: kerala_police_website_session=qCVcR8kXonIuLdX0fby3QlO3amfwhwI1DlPPYEyZ; path=/; secure; httponly
+Content-Encoding: gzip
