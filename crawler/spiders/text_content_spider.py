@@ -170,15 +170,38 @@ class TextContentSpider(scrapy.Spider):
     def closed(self, reason):
         """Save results to JSON file when spider closes"""
         try:
-            with open(self.output_file, 'w', encoding='utf-8') as f:
-                json.dump(self.results, f, indent=2, ensure_ascii=False)
-            
-            self.logger.info(f"Saved {len(self.results)} results to {self.output_file}")
-            
-            # Print summary
+            # Calculate summary statistics
+            total_urls = len(self.results)
             successful = len([r for r in self.results if r['error'] == 'none'])
-            errors = len(self.results) - successful
-            self.logger.info(f"Summary: {successful} successful, {errors} errors/skipped")
+            errors = len([r for r in self.results if r['error'] not in ['none', 'skipped_document']])
+            skipped_documents = len([r for r in self.results if r['error'] == 'skipped_document'])
+            not_html = len([r for r in self.results if r['error'] == 'not_html_content'])
+            
+            # Create summary object
+            summary = {
+                'total_urls_processed': total_urls,
+                'successful_extractions': successful,
+                'errors': errors,
+                'skipped_documents': skipped_documents,
+                'not_html_content': not_html,
+                'processing_completed_at': datetime.now().isoformat(),
+                'success_rate': f"{(successful/total_urls*100):.1f}%" if total_urls > 0 else "0.0%"
+            }
+            
+            # Structure final output with results and summary
+            output_data = {
+                'results': self.results,
+                'summary': summary
+            }
+            
+            with open(self.output_file, 'w', encoding='utf-8') as f:
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
+            
+            self.logger.info(f"Saved {total_urls} results to {self.output_file}")
+            
+            # Print detailed summary
+            self.logger.info(f"Summary: {successful} successful, {errors} errors, {skipped_documents} skipped documents")
+            self.logger.info(f"Success rate: {summary['success_rate']}")
             
         except Exception as e:
             self.logger.error(f"Error saving results: {e}")
