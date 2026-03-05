@@ -1,120 +1,117 @@
-# File: kerala_police_crawler/spiders/police_spider.py
+# File: crawler/spiders/police_spider.py
 
 import scrapy
+import json
 from urllib.parse import urljoin, urlparse
-import re
+from datetime import datetime
+
 
 class PoliceSpider(scrapy.Spider):
     name = 'kerala_police'
-    allowed_domains = ['keralapolice.gov.in']
-    start_urls = ['https://keralapolice.gov.in/']
-    
+    allowed_domains = ['thuna.keralapolice.gov.in']
+    start_urls = ['https://thuna.keralapolice.gov.in/']
+
     # File extensions to exclude (images, scripts, styles)
     excluded_extensions = {
-        # Images
         'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico',
-        # Scripts and styles  
         'js', 'css',
-        # Other assets we might want to skip
         'woff', 'woff2', 'ttf', 'eot', 'otf'
     }
-    
-    # File extensions to specifically include (documents)
+
+    # File extensions to treat as documents (yield but don't follow)
     document_extensions = {
         'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
         'txt', 'csv', 'xml', 'json', 'zip', 'rar'
     }
-    
+
     def __init__(self):
         self.found_urls = set()
-        
+        self.url_data = []  # Store full metadata for output
+
     def parse(self, response):
-        # Add current URL to found URLs
         current_url = response.url
         self.found_urls.add(current_url)
-        
-        # Yield current URL
-        yield {
+
+        item = {
             'url': current_url,
             'status_code': response.status,
             'content_type': response.headers.get('Content-Type', b'').decode('utf-8'),
             'title': response.css('title::text').get(),
             'depth': response.meta.get('depth', 0)
         }
-        
-        # Extract all links from <a> tags
+        self.url_data.append(item)
+        yield item
+
         links = response.css('a::attr(href)').getall()
-        
+
         for link in links:
             if link:
-                # Convert relative URLs to absolute
                 absolute_url = urljoin(response.url, link.strip())
-                
-                # Clean URL (remove fragments and some query params)
                 cleaned_url = self.clean_url(absolute_url)
-                
-                # Check if URL is valid and should be followed
+
                 if self.should_follow_url(cleaned_url):
                     if cleaned_url not in self.found_urls:
-                        # Check if it's a document or a page to crawl
                         if self.is_document_url(cleaned_url):
-                            # For documents, just yield the URL info without following
                             self.found_urls.add(cleaned_url)
-                            yield {
+                            doc_item = {
                                 'url': cleaned_url,
                                 'status_code': 'document',
                                 'content_type': 'document',
                                 'title': 'Document Link',
                                 'depth': response.meta.get('depth', 0) + 1
                             }
+                            self.url_data.append(doc_item)
+                            yield doc_item
                         else:
-                            # For regular pages, follow the link
                             yield response.follow(
-                                cleaned_url, 
+                                cleaned_url,
                                 callback=self.parse,
                                 dont_filter=False
                             )
-    
+
     def clean_url(self, url):
-        """Clean URL by removing fragments and unnecessary query parameters"""
-        # Remove fragment (everything after #)
+        """Remove fragments from URL"""
         if '#' in url:
             url = url.split('#')[0]
-        
-        # Remove common tracking parameters
-        parsed = urlparse(url)
-        # For now, keep all query parameters, but you can filter specific ones if needed
-        
         return url.rstrip('/')
-    
+
     def should_follow_url(self, url):
-        """Check if URL should be followed based on domain and file type"""
+        """Only follow URLs within thuna.keralapolice.gov.in"""
         parsed = urlparse(url)
-        
-        # Must be in allowed domain
-        if parsed.netloc not in self.allowed_domains:
+
+        if parsed.netloc != 'thuna.keralapolice.gov.in':
             return False
-        
-        # Get file extension
+
         path = parsed.path.lower()
         if '.' in path:
-            extension = path.split('.')[-1].split('?')[0]  # Remove query params
-            
-            # Skip excluded extensions
+            extension = path.split('.')[-1].split('?')[0]
             if extension in self.excluded_extensions:
                 return False
-        
+
         return True
-    
+
     def is_document_url(self, url):
         """Check if URL points to a document file"""
         parsed = urlparse(url)
         path = parsed.path.lower()
-        
+
         if '.' in path:
-            extension = path.split('.')[-1].split('?')[0]  # Remove query params
+            extension = path.split('.')[-1].split('?')[0]
             return extension in self.document_extensions
-        
+
         return False
 
+    def closed(self, reason):
+        """Save collected URLs to urls.json when crawl finishes"""
+        output = {
+            'crawled_at': datetime.now().isoformat(),
+            'start_url': self.start_urls[0],
+            'total_urls': len(self.url_data),
+            'urls': self.url_data
+        }
 
+        with open('urls.json', 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
+
+        self.logger.info(f"Saved {len(self.url_data)} URLs to urls.json")
+        self.logger.info(f"Crawl finished. Reason: {reason}")
